@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estudiantes</title>
+</head>
+<body>
+
+  <h1>Listado de Estudiantes</h1>
+  <table border="1" id="tabla">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Edad</th>
+        <th>Curso</th>
+        <th>Nivel</th>
+      </tr>
+    </thead>
+    <tbody id="cuerpo"></tbody>
+  </table>
+
+  <script>
+    fetch('https://apidemo.geoeducacion.com.ar/api/testing/encuesta/1')
+      .then(res => res.json())
+      .then(json => {
+        json.data.forEach(e => {
+          document.getElementById('cuerpo').innerHTML += `
+            <tr>
+              <td>${e.nombre}</td>
+              <td>${e.apellido}</td>
+              <td>${e.Edad}</td>
+              <td>${e.curso}</td>
+              <td>${e.nivel}</td>
+            </tr>`;
+        });
+      });
+  </script>
+
+</body>
+</html>

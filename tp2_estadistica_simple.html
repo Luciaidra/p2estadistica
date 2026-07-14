@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>TP2 - Estadística y Probabilidades</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body { padding: 30px; background-color: #f5f5f5; }
+    h1 { margin-bottom: 25px; }
+    table { background-color: white; }
+  </style>
+</head>
+<body>
+
+<h1>Tablas de Frecuencia y Estadísticos</h1>
+
+<!-- Las 3 pestañas que pide el enunciado -->
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#poblacion">Población completa</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#frecuencias">Tablas de Frecuencia</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#estadisticos">Estadísticos</button>
+  </li>
+</ul>
+
+<div class="tab-content border border-top-0 p-3">
+
+  <!-- PESTAÑA 1: Población completa -->
+  <div class="tab-pane fade show active" id="poblacion">
+    <h3>Población completa</h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Nombre y Apellido</th>
+          <th>Edad</th>
+          <th>Curso</th>
+          <th>Nivel Educativo</th>
+        </tr>
+      </thead>
+      <tbody id="tablaPoblacion"></tbody>
+    </table>
+  </div>
+
+  <!-- PESTAÑA 2: Tablas de Frecuencia -->
+  <div class="tab-pane fade" id="frecuencias">
+
+    <h3>Frecuencia de Niveles Educativos</h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Nivel</th>
+          <th>Frec. Absoluta</th>
+          <th>Frec. Acumulada</th>
+          <th>Frec. Relativa</th>
+        </tr>
+      </thead>
+      <tbody id="tablaNiveles"></tbody>
+    </table>
+
+    <h3>Frecuencia de Cursos (Nivel Secundario)</h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Curso</th>
+          <th>Frec. Absoluta</th>
+          <th>Frec. Acumulada</th>
+          <th>Frec. Relativa</th>
+        </tr>
+      </thead>
+      <tbody id="tablaCursos"></tbody>
+    </table>
+
+  </div>
+
+  <!-- PESTAÑA 3: Estadísticos -->
+  <div class="tab-pane fade" id="estadisticos">
+    <h3>Estadísticos de la Edad</h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Estadístico</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody id="tablaEstadisticos"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+
+// Pido los datos a la API
+fetch("https://apidemo.geoeducacion.com.ar/api/testing/encuesta/1")
+  .then(respuesta => respuesta.json())
+  .then(json => {
+    const alumnos = json.data;
+
+    mostrarPoblacion(alumnos);
+    mostrarFrecuencias(alumnos);
+    mostrarEstadisticos(alumnos);
+  })
+  .catch(error => {
+    console.log("Error al traer los datos:", error);
+  });
+
+
+// ── PESTAÑA 1: Población completa ──
+// Muestro una fila por cada alumno, sin filtrar nada
+function mostrarPoblacion(alumnos) {
+  let filas = "";
+  alumnos.forEach(alumno => {
+    filas += `<tr>
+      <td>${alumno.apellido} ${alumno.nombre}</td>
+      <td>${alumno.Edad}</td>
+      <td>${alumno.curso}</td>
+      <td>${alumno.nivel}</td>
+    </tr>`;
+  });
+  document.getElementById("tablaPoblacion").innerHTML = filas;
+}
+
+
+// PESTAÑA 2: Tablas de Frecuencia 
+
+// Función genérica: recibe una lista de valores (ej: todos los niveles)
+// y arma la tabla de Frecuencia Absoluta, Acumulada y Relativa
+function armarTablaFrecuencia(valores) {
+  // Paso 1: contar cuántas veces aparece cada valor
+  const conteo = {};
+  valores.forEach(valor => {
+    conteo[valor] = (conteo[valor] || 0) + 1;
+  });
+
+  // Paso 2: ordenar las categorías alfabéticamente (para que el
+  // acumulado tenga un orden lógico y no salte al azar)
+  const categorias = Object.keys(conteo).sort();
+
+  const total = valores.length;
+  let acumulada = 0;
+  let filas = "";
+
+  categorias.forEach(categoria => {
+    const absoluta = conteo[categoria];
+    acumulada += absoluta;
+    const relativa = (absoluta / total).toFixed(2);
+
+    filas += `<tr>
+      <td>${categoria}</td>
+      <td>${absoluta}</td>
+      <td>${acumulada}</td>
+      <td>${relativa}</td>
+    </tr>`;
+  });
+
+  return filas;
+}
+
+function mostrarFrecuencias(alumnos) {
+  // Tabla 1: todos los niveles educativos
+  const niveles = alumnos.map(a => a.nivel);
+  document.getElementById("tablaNiveles").innerHTML = armarTablaFrecuencia(niveles);
+
+  // Tabla 2: solo los cursos de alumnos del nivel Secundario
+  const secundarios = alumnos.filter(a => a.nivel === "Secundario");
+  const cursos = secundarios.map(a => a.curso);
+  document.getElementById("tablaCursos").innerHTML = armarTablaFrecuencia(cursos);
+}
+
+
+// PESTAÑA 3: Estadísticos 
+
+function calcularMedia(numeros) {
+  const suma = numeros.reduce((a, b) => a + b, 0);
+  return suma / numeros.length;
+}
+
+function calcularMediana(numeros) {
+  const ordenados = [...numeros].sort((a, b) => a - b);
+  const mitad = Math.floor(ordenados.length / 2);
+
+  if (ordenados.length % 2 === 0) {
+    // cantidad par: promedio los dos del medio
+    return (ordenados[mitad - 1] + ordenados[mitad]) / 2;
+  } else {
+    // cantidad impar: el del medio
+    return ordenados[mitad];
+  }
+}
+
+// Cuartil: mismo criterio que la mediana, pero buscando otro punto
+// de la distribución (25% para Q1, 50% para Q2)
+function calcularCuartil(numeros, porcentaje) {
+  const ordenados = [...numeros].sort((a, b) => a - b);
+  const posicion = (ordenados.length - 1) * porcentaje;
+  const base = Math.floor(posicion);
+  const resto = posicion - base;
+
+  if (ordenados[base + 1] !== undefined) {
+    return ordenados[base] + (ordenados[base + 1] - ordenados[base]) * resto;
+  }
+  return ordenados[base];
+}
+
+function calcularDesvioEstandar(numeros) {
+  const media = calcularMedia(numeros);
+
+  // sumo el cuadrado de la diferencia de cada valor contra la media
+  const sumaCuadrados = numeros.reduce((acumulado, valor) => {
+    return acumulado + Math.pow(valor - media, 2);
+  }, 0);
+
+  const varianza = sumaCuadrados / numeros.length;
+  return Math.sqrt(varianza);
+}
+
+function mostrarEstadisticos(alumnos) {
+  const edades = alumnos.map(a => a.Edad);
+
+  const resultados = [
+    ["Media", calcularMedia(edades).toFixed(2)],
+    ["Mediana", calcularMediana(edades).toFixed(2)],
+    ["Valor Máximo", Math.max(...edades)],
+    ["Valor Mínimo", Math.min(...edades)],
+    ["Primer Cuartil (Q1)", calcularCuartil(edades, 0.25).toFixed(2)],
+    ["Segundo Cuartil (Q2)", calcularCuartil(edades, 0.50).toFixed(2)],
+    ["Desvío Estándar", calcularDesvioEstandar(edades).toFixed(2)],
+  ];
+
+  let filas = "";
+  resultados.forEach(([nombre, valor]) => {
+    filas += `<tr><td>${nombre}</td><td>${valor}</td></tr>`;
+  });
+
+  document.getElementById("tablaEstadisticos").innerHTML = filas;
+}
+
+</script>
+</body>
+</html>

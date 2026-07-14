@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TP2 – Estadística y Probabilidades</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #0d0f14;
+      --surface:  #161a23;
+      --panel:    #1d2231;
+      --border:   #2a3045;
+      --accent:   #5b7cfa;
+      --accent2:  #a78bfa;
+      --text:     #e8ecf5;
+      --muted:    #7a84a0;
+      --success:  #34d399;
+      --warn:     #fbbf24;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 2.5rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #0d0f14 0%, #131829 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(91,124,250,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(91,124,250,.4);
+      padding: .25rem .75rem;
+      border-radius: 99px;
+      margin-bottom: .9rem;
+    }
+    header h1 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1.15;
+    }
+    header h1 span { color: var(--accent2); }
+    header p {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: .4rem;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ── MAIN ── */
+    main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+
+    /* ── TABS ── */
+    .nav-tabs {
+      border-bottom: 1px solid var(--border);
+      gap: .25rem;
+      margin-bottom: 2rem;
+    }
+    .nav-tabs .nav-link {
+      font-family: 'DM Mono', monospace;
+      font-size: .82rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 6px 6px 0 0;
+      padding: .6rem 1.2rem;
+      transition: color .2s, background .2s, border-color .2s;
+    }
+    .nav-tabs .nav-link:hover { color: var(--text); background: var(--panel); }
+    .nav-tabs .nav-link.active {
+      color: var(--accent);
+      background: var(--surface);
+      border-color: var(--border) var(--border) var(--surface);
+      font-weight: 600;
+    }
+
+    /* ── LOADER ── */
+    #loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 0;
+      gap: 1rem;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TABLES ── */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .table-wrapper h2 {
+      font-size: .78rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding: 1rem 1.4rem .8rem;
+      border-bottom: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+    }
+    thead tr { background: var(--panel); }
+    thead th {
+      padding: .75rem 1.2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .75rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-top: 1px solid var(--border);
+      transition: background .15s;
+    }
+    tbody tr:hover { background: rgba(91,124,250,.06); }
+    tbody td {
+      padding: .65rem 1.2rem;
+      color: var(--text);
+    }
+    .badge-nivel {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+      border: 1px solid;
+    }
+    .badge-primario  { color: #34d399; border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.08); }
+    .badge-secundario{ color: #5b7cfa; border-color: rgba(91,124,250,.4); background: rgba(91,124,250,.08); }
+    .badge-terciario { color: #fbbf24; border-color: rgba(251,191,36,.4);  background: rgba(251,191,36,.08);  }
+    .badge-universitario{ color: #a78bfa; border-color: rgba(167,139,250,.4); background: rgba(167,139,250,.08); }
+
+    /* ── STATS CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s;
+    }
+    .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(91,124,250,.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card .label {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent2);
+      line-height: 1;
+    }
+
+    /* ── FREQ TABLE COLS ── */
+    .col-num { text-align: right; font-family: 'DM Mono', monospace; }
+    .col-bar { width: 120px; }
+    .freq-bar-bg {
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .freq-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── ERROR ── */
+    .error-box {
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius: 10px;
+      padding: 1.5rem;
+      color: #f87171;
+      font-family: 'DM Mono', monospace;
+      font-size: .85rem;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-size: .72rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .section-title span { color: var(--accent2); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="max-width:1200px; margin:0 auto;">
+    <div class="header-badge">Estadística · TP Nro 2 · 2026</div>
+    <h1>Tablas de Frecuencia<br><span>&amp; Estadísticos</span></h1>
+    <p>Tecnicatura Superior en Desarrollo de Software</p>
+  </div>
+</header>
+
+<main>
+  <div id="loader">
+    <div class="spinner"></div>
+    <span style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--muted);">Cargando datos de la API…</span>
+  </div>
+
+  <div id="app" style="display:none">
+    <!--
+      Sistema de pestañas de Bootstrap: cada <button> es una "solapa".
+      data-bs-target apunta al id del div que se muestra al hacer clic
+      (Bootstrap se encarga solo del cambio de pestaña, no hace falta JS propio).
+    -->
+    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-poblacion"  role="tab">Población completa</button></li>
+      <li class="nav-item"><button class="nav-link"        data-bs-toggle="tab" data-bs-target="#tab-frecuencia" role="tab">Tablas de Frecuencia</button></li>
+      <li class="nav-item"><button class="nav-link"        data-bs-toggle="tab" data-bs-target="#tab-estadisticos" role="tab">Estadísticos</button></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <!-- ══ PESTAÑA 1: Población completa ══ -->
+      <div class="tab-pane fade show active" id="tab-poblacion" role="tabpanel">
+        <div class="table-wrapper">
+          <h2>Población completa — <span id="total-count" style="color:var(--text)"></span> registros</h2>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nombre y Apellido</th>
+                  <th>Edad</th>
+                  <th>Curso</th>
+                  <th>Nivel Educativo</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-poblacion"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PESTAÑA 2: Tablas de Frecuencia ══ -->
+      <div class="tab-pane fade" id="tab-frecuencia" role="tabpanel">
+
+        <p class="section-title">Variable: <span>Nivel Educativo</span></p>
+        <div class="table-wrapper">
+          <h2>Frecuencias — Niveles educativos</h2>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nivel</th>
+                  <th class="col-num">Fi (Frec. Abs.)</th>
+                  <th class="col-num">Fi ac. (Acumulada)</th>
+                  <th class="col-num">hi (Relativa)</th>
+                  <th class="col-num">hi % (Porc.)</th>
+                  <th class="col-bar">Distribución</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-niveles"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="section-title">Variable: <span>Curso (Nivel Secundario)</span></p>
+        <div class="table-wrapper">
+          <h2>Frecuencias — Cursos del nivel secundario</h2>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Curso</th>
+                  <th class="col-num">Fi (Frec. Abs.)</th>
+                  <th class="col-num">Fi ac. (Acumulada)</th>
+                  <th class="col-num">hi (Relativa)</th>
+                  <th class="col-num">hi % (Porc.)</th>
+                  <th class="col-bar">Distribución</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-cursos"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ PESTAÑA 3: Estadísticos ══ -->
+      <div class="tab-pane fade" id="tab-estadisticos" role="tabpanel">
+        <p class="section-title">Variable: <span>Edad</span></p>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="table-wrapper">
+          <h2>Resumen estadístico — Edad</h2>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr><th>Estadístico</th><th class="col-num">Valor</th><th>Descripción</th></tr>
+              </thead>
+              <tbody id="tabla-estadisticos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-content -->
+  </div><!-- /app -->
+
+  <div id="error-container"></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+// Recibe un nivel (ej: "Secundario") y devuelve el mismo texto
+// envuelto en un <span> con una clase de color distinta según el nivel.
+// Es solo estética, no tiene lógica estadística.
+function badgeNivel(nivel) {
+  const map = {
+    'primario':       'badge-primario',
+    'secundario':     'badge-secundario',
+    'terciario':      'badge-terciario',
+    'universitario':  'badge-universitario',
+  };
+  const key   = nivel.toLowerCase();
+  const cls   = Object.keys(map).find(k => key.includes(k)) || '';
+  return `<span class="badge-nivel ${map[cls] || ''}">${nivel}</span>`;
+}
+
+// Arma las filas de una TABLA DE FRECUENCIA.
+// freqMap: objeto contador, ej. { "Primario": 12, "Secundario": 8 }
+// total:   cantidad total de registros, para calcular la relativa
+// Se reutiliza para las dos tablas (niveles y cursos) pasándole
+// un freqMap distinto cada vez.
+function freqRows(freqMap, total) {
+  // Paso 0: paso el objeto a una lista de pares [categoria, cantidad]
+  const entries = Object.entries(freqMap).sort((a, b) => b[1] - a[1]);
+
+  let acum = 0; // acá se va a ir acumulando la frecuencia, fila por fila
+  const max = Math.max(...entries.map(e => e[1])); // solo para la barrita visual
+
+  return entries.map(([label, fi]) => {
+    // fi = Frecuencia Absoluta de esta categoría (viene del freqMap)
+
+    acum += fi;
+    // Frecuencia Acumulada: le sumo fi al acumulado de las filas anteriores
+
+    const hi  = fi / total;
+    // Frecuencia Relativa: esta categoría dividida por el total de registros
+
+    const pct = (hi * 100).toFixed(1);
+    // Lo mismo que hi, pero expresado como porcentaje
+
+    const barW = Math.round((fi / max) * 100); // ancho de la barra visual (0-100%)
+
+    return `<tr>
+      <td>${label}</td>
+      <td class="col-num">${fi}</td>
+      <td class="col-num">${acum}</td>
+      <td class="col-num">${hi.toFixed(4)}</td>
+      <td class="col-num">${pct}%</td>
+      <td class="col-bar">
+        <div class="freq-bar-bg">
+          <div class="freq-bar-fill" style="width:${barW}%"></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ────────── Estadísticos (se calculan sobre el array de Edades) ──────────
+
+// Media: suma todos los valores y divide por la cantidad
+function mean(arr) { return arr.reduce((a,b) => a+b, 0) / arr.length; }
+
+// Mediana: ordena de menor a mayor y toma el valor central
+// (si la cantidad es par, promedia los dos valores centrales)
+function median(arr) {
+  const s = [...arr].sort((a,b) => a-b);
+  const m = Math.floor(s.length/2);
+  return s.length % 2 ? s[m] : (s[m-1]+s[m])/2;
+}
+
+// Cuartil: ordena los datos y calcula la posición decimal donde "cae"
+// el cuartil pedido (q=0.25 → Q1, q=0.50 → Q2). Si esa posición no es
+// un número entero, interpola entre los dos valores más cercanos.
+function quartile(arr, q) {
+  const s = [...arr].sort((a,b) => a-b);
+  const pos = (s.length - 1) * q;
+  const lo  = Math.floor(pos);
+  const hi  = Math.ceil(pos);
+  return s[lo] + (s[hi] - s[lo]) * (pos - lo);
+}
+
+// Desvío estándar: 1) saca la media, 2) suma el cuadrado de la
+// diferencia de cada valor contra la media (= varianza), 3) le
+// saca la raíz cuadrada. Se divide por arr.length porque es la
+// población completa, no una muestra.
+function stddev(arr) {
+  const m = mean(arr);
+  return Math.sqrt(arr.reduce((a,b) => a + (b-m)**2, 0) / arr.length);
+}
+
+// ════════════════════════════════════════════════
+//  MAIN
+// ════════════════════════════════════════════════
+async function init() {
+  try {
+    const res  = await fetch('https://apidemo.geoeducacion.com.ar/api/testing/encuesta/1');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json.success) throw new Error('La API devolvió success: false');
+
+    const data = json.data; // acá ya tengo el array completo de estudiantes
+
+    // ── 1. Población completa ──────────────────
+    // Simplemente recorro TODOS los registros (sin filtrar) y arme
+    // una fila de tabla por cada uno, con las 4 columnas pedidas.
+    document.getElementById('total-count').textContent = data.length;
+    document.getElementById('tabla-poblacion').innerHTML = data.map((r, i) => `
+      <tr>
+        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.75rem">${i+1}</td>
+        <td><strong>${r.apellido}</strong>, ${r.nombre}</td>
+        <td class="col-num">${r.Edad}</td>
+        <td>${r.curso}</td>
+        <td>${badgeNivel(r.nivel)}</td>
+      </tr>`).join('');
+
+    // ── 2. Tablas de frecuencia ────────────────
+
+    // 2a. TABLA 1: Niveles educativos (con TODOS los alumnos)
+    const nivelMap = {};
+    // Cuento cuántos alumnos hay por cada nivel (Primario, Secundario, etc.)
+    data.forEach(r => { nivelMap[r.nivel] = (nivelMap[r.nivel] || 0) + 1; });
+    // Le paso ese contador a freqRows() para que arme acumulada y relativa
+    document.getElementById('tabla-niveles').innerHTML = freqRows(nivelMap, data.length);
+
+    // 2b. TABLA 2: Cursos, pero SOLO del nivel secundario
+    // Primero me quedo solo con los alumnos de nivel "Secundario"
+    const secundarios = data.filter(r => r.nivel.toLowerCase().includes('secundario'));
+    const cursoMap = {};
+    // Cuento cuántos alumnos hay por cada curso (1ro A, 2do B, etc.)
+    secundarios.forEach(r => { cursoMap[r.curso] = (cursoMap[r.curso] || 0) + 1; });
+    document.getElementById('tabla-cursos').innerHTML =
+      secundarios.length
+        ? freqRows(cursoMap, secundarios.length) // ojo: el total acá es solo los secundarios, no todos
+        : '<tr><td colspan="6" style="color:var(--muted);padding:1.2rem;text-align:center">No hay registros de nivel secundario.</td></tr>';
+
+    // ── 3. Estadísticos sobre Edad ─────────────
+    // Armo un array con SOLO las edades, para pasárselo a cada función
+    const edades = data.map(r => r.Edad);
+
+    // Calculo los 7 estadísticos pedidos, uno por uno, llamando
+    // a las funciones que están definidas arriba (mean, median, quartile, stddev)
+    const stats = [
+      { key: 'Media',          val: mean(edades).toFixed(2),         desc: 'Promedio aritmético de las edades.' },
+      { key: 'Mediana',        val: median(edades).toFixed(2),       desc: 'Valor central de la distribución.' },
+      { key: 'Valor Máximo',   val: Math.max(...edades),             desc: 'Edad más alta registrada.' },
+      { key: 'Valor Mínimo',   val: Math.min(...edades),             desc: 'Edad más baja registrada.' },
+      { key: 'Primer Cuartil', val: quartile(edades,.25).toFixed(2), desc: 'Q1 — 25% de los datos está por debajo.' },
+      { key: 'Segundo Cuartil',val: quartile(edades,.50).toFixed(2), desc: 'Q2 — equivale a la mediana.' },
+      { key: 'Desvío Estándar',val: stddev(edades).toFixed(4),       desc: 'Dispersión respecto a la media.' },
+    ];
+
+    // Cards (primeros 4)
+    document.getElementById('stats-grid').innerHTML = stats.slice(0,4).map(s => `
+      <div class="stat-card">
+        <div class="label">${s.key}</div>
+        <div class="value">${s.val}</div>
+      </div>`).join('');
+
+    // Full table
+    document.getElementById('tabla-estadisticos').innerHTML = stats.map(s => `
+      <tr>
+        <td><strong>${s.key}</strong></td>
+        <td class="col-num" style="font-family:'DM Mono',monospace;color:var(--accent2)">${s.val}</td>
+        <td style="color:var(--muted);font-size:.83rem">${s.desc}</td>
+      </tr>`).join('');
+
+    // Show app
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('app').style.display    = 'block';
+
+  } catch (err) {
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('error-container').innerHTML = `
+      <div class="error-box">
+        <strong>Error al cargar los datos</strong><br>
+        ${err.message}
+      </div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
